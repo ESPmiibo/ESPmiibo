@@ -1,5 +1,5 @@
 //Version and program intro.
-char VERSION[] = "1.2";
+char VERSION[] = "1.3";
 char PROGRAM_DESCRIPTION[] =
   "LyfeOnEdge's Amiibo cloning tool.\nUART interface for cloning, writing, and dumping Amiibos.\nWorks with NTAG215 NFC Tags and Cards.\nBased on Xerxes3rd's Wifiibo project and socram8888's amitool available on github";
 
