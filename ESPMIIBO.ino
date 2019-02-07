@@ -23,7 +23,7 @@
 
 
 //Change these to the username and password for your wifi
-const char* ssid = "Ridley";                    //Change this to the name of your 2.4GHz wifi
+const char* ssid = "Ridley";                    //Change this to the name of your 2.4GHz wifi, 5GHz not supported on esp8266
 const char* password = "metroids7";             //Change this to your wifi password
 const char* hostName = "ESPmiibo";              //Name of the wifi access point
 const char* http_username = "admin";            //Not actually used right now
@@ -34,23 +34,6 @@ const int baudrate = 9600;
 
 
 ////END USER DEFINITIONS////
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 //Includes and definitions
@@ -67,7 +50,15 @@ const int baudrate = 9600;
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <WiFiClient.h>
-#include "definitions.h"
+#include "definitions.h"                //It was getting a bit cluttered so moved functions to file based on their purpose
+#include "file_downloader.cpp"
+#include "serial_debug.cpp"
+#include "amiibo_handling.cpp"
+#include "webpage_backend.cpp"
+#include "webpage_frontend.cpp"
+
+
+
 
 //NFC LIBRARIES
 #ifdef USE_PN532
@@ -77,8 +68,6 @@ const int baudrate = 9600;
 #ifdef USE_MFRC522
 #include <MFRC522Ex.h>
 #endif
-
-
 
 
 
@@ -273,6 +262,32 @@ void loop() {
 void yieldEvent() {
   server.handleClient();
   yield();
+}
+
+//Displays a list of options from an array of strings and returns the numeric value of the string chosen, returns 0 if nothing chose
+int listFunctions(const String * functionStrings, int numberOfFunctions) {
+  debug("Printing function list.");
+  consoleln(F("Functions: "));
+  for (int i = 0; i < numberOfFunctions; i++) {
+    console(String(i + 1) + ": ");                       //print the number corresponding to each command in the list
+    consoleln(functionStrings[i]);
+  }
+  serialSeparator();
+  int chosenFunction = serialEvent().toInt();            //take the incoming command and turn it into an integer, defaults to 0 which is why we reserve it
+
+  if (chosenFunction) {
+    console(F("Function Number: "));
+    consoleln(chosenFunction);                           //print the function number
+    console(F("Executing Function: "));
+    consoleln(functionStrings[chosenFunction - 1]);      //print the command name from the array of strings, increase by one since the incoming number will be one more since the array starts from zero. done because we are reserving 0
+    debug("Exiting listFunctions with function: " + String(functionStrings[chosenFunction - 1]));
+    debug("Exiting listFunctions with status: " + String(chosenFunction));
+    return chosenFunction;
+  } else {
+    console(F("No function selected."));
+    debug(F("Exiting listFunctions with function status 0"));
+    return 0;
+  }
 }
 
 void mainFunctionDumpAmiibo() {
@@ -535,120 +550,7 @@ void wifiSetup() {
 
 
 
-/*
-  .._____ ______ _____  _____          _            __  _____  ______ ____  _    _  _____
-  ./ ____|  ____|  __ \|_   _|   /\   | |          / / |  __ \|  ____|  _ \| |  | |/ ____|
-  | (___ | |__  | |__) | | |    /  \  | |         / /  | |  | | |__  | |_) | |  | | |  __
-  .\___ \|  __| |  _  /  | |   / /\ \ | |        / /   | |  | |  __| |  _ <| |  | | | |_ |
-  .____) | |____| | \ \ _| |_ / ____ \| |____   / /    | |__| | |____| |_) | |__| | |__| |
-  |_____/|______|_|  \_\_____/_/    \_\______| /_/     |_____/|______|____/ \____/ \_____|
-*/
-String inputString = "";            // a String to hold incoming data
 
-//Custom serial event for program control. Stop program till input, similar to cin
-String serialEvent() {
-  while (!Serial.available()) {
-    yield();
-    server.handleClient();
-  }
-  const bool inputComplete = false; //never goes true
-  while (!inputComplete) {
-    // get the new byte:
-    if (Serial.available()) {
-      char inChar = (char)Serial.read();
-      if (inChar == '\n') {
-        serialSeparator();
-        debug("Received via Serial: " + inputString);
-        serialSeparator();
-        String returnString = inputString;
-        inputString = "";
-
-        returnString = serialInterrupt(returnString);                 //modifies the input to allow text commands, enables command to restart
-
-        return returnString;
-      } else {
-        inputString += inChar;
-      }
-    }
-    yieldEvent();
-  }
-}
-
-//ONLY CALL THINGS HERE IF YOU ARE OK WITH ABORTING PROCESSES
-//DEFINITIONS IN "definitions.h"
-//You can use this to modify the serial string.
-String serialInterrupt(String checkString) {
-  if (checkString == RESTART_STRING) {
-    ESP.restart();
-  } else if (checkString == String(BACK_STRING) || checkString == String(UP_STRING)) {
-    return String(BACK_BUTTON);
-  }
-  return checkString;
-}
-
-
-//Clean consistent separator
-void serialSeparator() {
-  Serial.println(F("\n_______________________________\n"));
-}
-
-
-//debug output function, currently integrating post-humously
-void debug(String debugString) {
-  if (enableDebug) {
-    Serial.println("(DEBUG):" + debugString);
-  }
-}
-
-//String
-void console(String consoleOut) {
-  Serial.print(consoleOut);
-  if (consoleToDebug) {
-    debug("Serial Out: " + consoleOut);
-  }
-}
-
-//String w/ \n
-void consoleln(String consoleOut) {
-  Serial.println(consoleOut);
-  if (consoleToDebug) {
-    debug("Serial Line: " + consoleOut);
-  }
-}
-
-//int w/ \n
-void consoleln(int consoleOut) {
-  Serial.println(consoleOut);
-  if (consoleToDebug) {
-    debug("Serial Line: " + consoleOut);
-  }
-}
-
-
-//The program has been written to allow anything to act as a button. Add sections for different buttons
-void waitForButton() {            //stops program until button is pushed
-  WiFiButtonPushed = false;       //Debounce if it got pushed before the fucntion was called
-  consoleln(F("Place tag on reader and push FLASH / READ button"));
-
-  bool buttonPushed = false;
-  while (!buttonPushed) {  //wait for button to be pushed
-
-    server.handleClient();        //updates client (also useful cause it checks for the wifi button being pushed)
-
-    if (digitalRead(BUTTON)) {
-      buttonPushed = true;
-    }
-
-    if (WiFiButtonPushed) {
-      buttonPushed = true;
-    }
-
-    yieldEvent();
-
-  }
-
-  WiFiButtonPushed = false;
-}
 
 
 
@@ -738,487 +640,8 @@ void restartFunction() {
 }
 
 
-//ADDITIONAL OPTIONS// // // // // // // // // // // // // // // // // // // // //
-//Displays a list of options from an array of strings and returns the location of the string chosen, returns 0 if nothing chose
-int listFunctions(const String * functionStrings, int numberOfFunctions) {
-  debug("Printing function list.");
-  consoleln(F("Functions: "));
-  for (int i = 0; i < numberOfFunctions; i++) {
-    console(String(i + 1) + ": ");                       //print the number corresponding to each command in the list
-    consoleln(functionStrings[i]);
-  }
-  serialSeparator();
-  int chosenFunction = serialEvent().toInt();            //take the incoming command and turn it into an integer, defaults to 0 which is why we reserve it
-
-  if (chosenFunction) {
-    console(F("Function Number: "));
-    consoleln(chosenFunction);                           //print the function number
-    console(F("Executing Function: "));
-    consoleln(functionStrings[chosenFunction - 1]);      //print the command name from the array of strings, increase by one since the incoming number will be one more since the array starts from zero. done because we are reserving 0
-    debug("Exiting listFunctions with function: " + String(functionStrings[chosenFunction - 1]));
-    debug("Exiting listFunctions with status: " + String(chosenFunction));
-    return chosenFunction;
-  } else {
-    console(F("No function selected."));
-    debug(F("Exiting listFunctions with function status 0"));
-    return 0;
-  }
-}
 
 
-
-
-
-
-/*
-  __          ________ ____  _____        _____ ______      _____ _______ _    _ ______ ______
-  \ \        / /  ____|  _ \|  __ \ /\   / ____|  ____|    / ____|__   __| |  | |  ____|  ____|
-  .\ \  /\  / /| |__  | |_) | |__) /  \ | |  __| |__      | (___    | |  | |  | | |__  | |__
-  ..\ \/  \/ / |  __| |  _ <|  ___/ /\ \| | |_ |  __|      \___ \   | |  | |  | |  __| |  __|
-  ...\  /\  /  | |____| |_) | |  / ____ \ |__| | |____     ____) |  | |  | |__| | |    | |
-  ....\/  \/   |______|____/|_| /_/    \_\_____|______|   |_____/   |_|   \____/|_|    |_|
-  This is still heavily WIP. Will be adding more buttons in the future.
-*/
-
-void webpageSetup() {
-  server.on("/upload", HTTP_GET,
-  []() {                 // if the client requests the upload page
-    if (!handleFileRead("/upload.html"))                // send it if it exists
-      server.send(404, "text/plain", "404: Not Found"); // otherwise, respond with a 404 (Not Found) error
-  });
-
-  server.on("/upload", HTTP_POST, []() {                       // if the client posts to the upload page[]() {
-    server.send(200);
-  },                          // Send status 200 (OK) to tell the client we are ready to receive
-  handleFileUpload                                    // Receive and save the file
-           );
-
-  //Custom pages
-  server.on("/buttonpushed", HTTP_GET, handleButton);
-  server.on("/", HTTP_GET, handleRoot);
-  server.on("/openfileserver", HTTP_GET, handleEditRedirect);
-  //server.on("/quickClone", HTTP_GET, handleQuickClone);
-  server.on("/statsForNerds", HTTP_GET, handleNerdStats);
-
-  server.onNotFound([]() {                              // If the client requests any URI
-    if (!handleFileRead(server.uri()))                  // send it if it exists
-      server.send(404, "text/plain", "404: Not Found"); // otherwise, respond with a 404 (Not Found) error
-  });
-
-  server.on("/list", HTTP_GET, handleFileList);
-  //load editor
-  server.on("/edit", HTTP_GET, []() {
-    if (!handleFileRead("/edit.htm")) {
-      server.send(404, "text/plain", "FileNotFound");
-    }
-  });
-  //create file
-  server.on("/edit", HTTP_PUT, handleFileCreate);
-  //delete file
-  server.on("/edit", HTTP_DELETE, handleFileDelete);
-  //first callback is called after the request has ended with all parsed arguments
-  //second callback handles file uploads at that location
-  server.on("/edit", HTTP_POST, []() {
-    server.send(200, "text/plain", "");
-  }, handleFileUpload);
-
-  server.on("/all", HTTP_GET, []() {
-    String json = "{";
-    json += "\"heap\":" + String(ESP.getFreeHeap());
-    json += ", \"analog\":" + String(analogRead(A0));
-    json += ", \"gpio\":" + String((uint32_t)(((GPI | GPO) & 0xFFFF) | ((GP16I & 0x01) << 16)));
-    json += "}";
-    server.send(200, "text/json", json);
-    json = String();
-  });
-
-  server.begin();
-}
-
-
-void handleButton() {
-  Serial.println(F("Button pressed in browser."));
-  debug(F("button pushed in browser"));
-  WiFiButtonPushed = true;                            //track globally that the button has been pushed
-  server.sendHeader("Location", "/main.htm", true);  //Redirect to our html web page
-  server.send(302, "text/plain", "");
-}
-
-void handleRoot() {
-  server.sendHeader("Location", "/main.htm", true);  //Redirect to our html web page
-  server.send(302, "text/plain", "");
-}
-
-void handleEditRedirect() {
-  server.sendHeader("Location", "/edit", true);  //Redirect to our html web page
-  server.send(302, "text/plain", "");
-}
-
-void handleNerdStats() {
-  server.sendHeader("Location", "/graphs.htm", true);  //Redirect to our html web page
-  server.send(302, "text/plain", "");
-}
-
-
-/* NYI | Future Button
-  void handleQuickClone(){
-   mainFunctionCloneAmiibo();
-   server.sendHeader("Location", "/main.htm", true);  //Redirect to our html web page
-   server.send(302, "text/plain", "");
-  }
-
-    <form action="/quickClone" method="get" enctype="multipart/form-data" name="push_button">
-    <a href="#"><input class="button" type="submit" value="QUICK CLONE">
-    </section>
-    </form>
-*/
-
-
-
-
-
-
-
-
-/*
-   __          ________ ____  _____        _____ ______     ____          _____ _  ________ _   _ _____
-  \ \        / /  ____|  _ \|  __ \ /\   / ____|  ____|   |  _ \   /\   / ____| |/ /  ____| \ | |  __ \
-  .\ \  /\  / /| |__  | |_) | |__) /  \ | |  __| |__      | |_) | /  \ | |    | ' /| |__  |  \| | |  | |
-  ..\ \/  \/ / |  __| |  _ <|  ___/ /\ \| | |_ |  __|     |  _ < / /\ \| |    |  < |  __| | . ` | |  | |
-  ...\  /\  /  | |____| |_) | |  / ____ \ |__| | |____    | |_) / ____ \ |____| . \| |____| |\  | |__| |
-  ....\/  \/   |______|____/|_| /_/    \_\_____|______|   |____/_/    \_\_____|_|\_\______|_| \_|_____/
-  You probably don't want to mess with this.
-*/
-
-String getContentType(String filename) {
-  if (server.hasArg("download")) {
-    return "application/octet-stream";
-  } else if (filename.endsWith(".htm")) {
-    return "text/html";
-  } else if (filename.endsWith(".html")) {
-    return "text/html";
-  } else if (filename.endsWith(".css")) {
-    return "text/css";
-  } else if (filename.endsWith(".js")) {
-    return "application/javascript";
-  } else if (filename.endsWith(".png")) {
-    return "image/png";
-  } else if (filename.endsWith(".gif")) {
-    return "image/gif";
-  } else if (filename.endsWith(".jpg")) {
-    return "image/jpeg";
-  } else if (filename.endsWith(".ico")) {
-    return "image/x-icon";
-  } else if (filename.endsWith(".xml")) {
-    return "text/xml";
-  } else if (filename.endsWith(".pdf")) {
-    return "application/x-pdf";
-  } else if (filename.endsWith(".zip")) {
-    return "application/x-zip";
-  } else if (filename.endsWith(".gz")) {
-    return "application/x-gzip";
-  }
-  return "text/plain";
-}
-
-
-void handleFileList() {
-  if (!server.hasArg("dir")) {
-    server.send(500, "text/plain", "BAD ARGS");
-    return;
-  }
-
-  String path = server.arg("dir");
-  debug("handleFileList: " + path);
-  fs::Dir dir = SPIFFS.openDir(path);
-  path = String();
-
-  String output = "[";
-  while (dir.next()) {
-    fs::File entry = dir.openFile("r");
-    if (output != "[") {
-      output += ',';
-    }
-    bool isDir = false;
-    output += "{\"type\":\"";
-    output += (isDir) ? "dir" : "file";
-    output += "\",\"name\":\"";
-    output += String(entry.name()).substring(1);
-    output += "\"}";
-    entry.close();
-  }
-
-  output += "]";
-  server.send(200, "text/json", output);
-  serialSeparator();
-}
-
-
-//Webpage Stuff
-//MUCH OF THIS IS FROM THE ESP_AsyncFSBrowser example
-void handleWebRequests() {
-  if (loadFromSpiffs(server.uri())) return;
-  String message = "File Not Detected\n\n";
-  message += "URI: ";
-  message += server.uri();
-  message += "\nMethod: ";
-  message += (server.method() == HTTP_GET) ? "GET" : "POST";
-  message += "\nArguments: ";
-  message += server.args();
-  message += "\n";
-  for (uint8_t i = 0; i < server.args(); i++) {
-    message += " NAME:" + server.argName(i) + "\n VALUE:" + server.arg(i) + "\n";
-  }
-  server.send(404, "text/plain", message);
-  debug(message + '\n');
-}
-
-
-bool loadFromSpiffs(String path) {
-  String dataType = "text/plain";
-  if (path.endsWith("/")) path += "index.htm";
-  if (path.endsWith(".src")) path = path.substring(0, path.lastIndexOf("."));
-  else if (path.endsWith(".html")) dataType = "text/html";
-  else if (path.endsWith(".htm")) dataType = "text/html";
-  else if (path.endsWith(".css")) dataType = "text/css";
-  else if (path.endsWith(".js")) dataType = "application/javascript";
-  else if (path.endsWith(".png")) dataType = "image/png";
-  else if (path.endsWith(".gif")) dataType = "image/gif";
-  else if (path.endsWith(".jpg")) dataType = "image/jpeg";
-  else if (path.endsWith(".ico")) dataType = "image/x-icon";
-  else if (path.endsWith(".xml")) dataType = "text/xml";
-  else if (path.endsWith(".pdf")) dataType = "application/pdf";
-  else if (path.endsWith(".zip")) dataType = "application/zip";
-  fs::File dataFile = SPIFFS.open(path.c_str(), "r");
-  if (server.hasArg("download")) dataType = "application/octet-stream";
-  if (server.streamFile(dataFile, dataType) != dataFile.size()) {
-  }
-  dataFile.close();
-  return true;
-}
-
-
-bool handleFileRead(String path) { // send the right file to the client (if it exists)
-  debug("handleFileRead: " + path);
-  if (path.endsWith("/")) path += "index.html";          // If a folder is requested, send the index file
-  String contentType = getContentType(path);             // Get the MIME type
-  String pathWithGz = path + ".gz";
-  if (SPIFFS.exists(pathWithGz) || SPIFFS.exists(path)) { // If the file exists, either as a compressed archive, or normal
-    if (SPIFFS.exists(pathWithGz))                         // If there's a compressed version available
-      path += ".gz";                                         // Use the compressed verion
-    fs::File file = SPIFFS.open(path, "r");                    // Open the file
-    size_t sent = server.streamFile(file, contentType);    // Send it to the client
-    file.close();                                          // Close the file again
-    debug(String("\tSent file: ") + path);
-    serialSeparator();
-    return true;
-  }
-  debug(String("\tFile Not Found: ") + path);   // If the file doesn't exist, return false
-  debug("");
-  return false;
-}
-
-void handleFileUpload() {
-  if (server.uri() != "/edit") {
-    return;
-  }
-  HTTPUpload& upload = server.upload();
-  if (upload.status == UPLOAD_FILE_START) {
-    String filename = upload.filename;
-    if (!filename.startsWith("/")) {
-      filename = "/" + filename;
-    }
-    debug("handleFileUpload Name: " + filename);
-    fsUploadFile = SPIFFS.open(filename, "w");
-    filename = String();
-  } else if (upload.status == UPLOAD_FILE_WRITE) {
-    //Serial.print("handleFileUpload Data: "); Serial.println(upload.currentSize);
-    if (fsUploadFile) {
-      fsUploadFile.write(upload.buf, upload.currentSize);
-    }
-  } else if (upload.status == UPLOAD_FILE_END) {
-    if (fsUploadFile) {
-      fsUploadFile.close();
-    }
-    debug("handleFileUpload Size: " + upload.totalSize);
-  }
-  serialSeparator();
-}
-
-void handleFileDelete() {
-  if (server.args() == 0) {
-    return server.send(500, "text/plain", "BAD ARGS");
-  }
-  String path = server.arg(0);
-  debug("handleFileDelete: " + path);
-  if (path == "/") {
-    return server.send(500, "text/plain", "BAD PATH");
-  }
-  if (!SPIFFS.exists(path)) {
-    return server.send(404, "text/plain", "FileNotFound");
-  }
-  SPIFFS.remove(path);
-  server.send(200, "text/plain", "");
-  path = String();
-  serialSeparator();
-}
-
-void handleFileCreate() {
-  if (server.args() == 0) {
-    return server.send(500, "text/plain", "BAD ARGS");
-  }
-  String path = server.arg(0);
-  debug("handleFileCreate: " + path);
-  if (path == "/") {
-    return server.send(500, "text/plain", "BAD PATH");
-  }
-  if (SPIFFS.exists(path)) {
-    return server.send(500, "text/plain", "FILE EXISTS");
-  }
-  fs::File file = SPIFFS.open(path, "w");
-  if (file) {
-    file.close();
-  } else {
-    return server.send(500, "text/plain", "CREATE FAILED");
-  }
-  server.send(200, "text/plain", "");
-  path = String();
-  serialSeparator();
-}
-
-
-/*
-  ...................._ _ _             _    _                 _ _ _
-  ..../\             (_|_) |           | |  | |               | | (_)
-  .../  \   _ __ ___  _ _| |__   ___   | |__| | __ _ _ __   __| | |_ _ __   __ _
-  ../ /\ \ | '_ ` _ \| | | '_ \ / _ \  |  __  |/ _` | '_ \ / _` | | | '_ \ / _` |
-  ./ ____ \| | | | | | | | |_) | (_) | | |  | | (_| | | | | (_| | | | | | | (_| |
-  /_/    \_\_| |_| |_|_|_|_.__/ \___/  |_|  |_|\__,_|_| |_|\__,_|_|_|_| |_|\__, |
-  Various amiibo and nfc related functions..................................__/ |
-  Editing these can damage cards if you are not careful....................|___/
-    `                                    '
-     ''                                 ''`
-    '''''                             ''''''
-   ''''''';         ,+++;`          :'''''''
-   ;''''''       .@@@@@@@@@#         '''''';
-     ,''',      #@@@@@@@@@@@@,       .''':
-       `;      #@@@@@@@@@@@@@@;       '`
-              @@@@@@@@+#@@@@@@@@
-             '@@@@@@.    ;@@@@@@`
-  ;;;,.`      @@@@@@.      #@@@@@#       `.,:::
-  ;;;;;;:     @@@@@@        @@@@@@      ,::::::
-  ;;;;;;:     @@@@@@        @@@@@@      ,::::::
-  .`          @@@@@@#       @@@@@@           `.
-              :@@@@@@@,  ,. @@@@@@
-               .@@@@@@@@@@, @@@@@@
-       .::      ;@@@@@@@@@, @@@@@@     ;;.
-     ,:::::      .@@@@@@@@, @@@@@@    ;;;;;:
-    :::::::.       :@@@@@+  ######   `;;;;;;;
-    :::::::                           ;;;;;;:
-     :::::                             :;;;;
-     ,::.                               .;;:
-      :                                   ;
-*/
-bool handleNFC() {                    //Heavily edited, removed a lot of unwanted functionality
-  if (triggerReadNFC) {
-    triggerReadNFC = false;
-    console(F("Reading NTAG"));
-    bool result = atool.readTag(sendStatusCharArray, updateProgress);
-
-    if (result)
-    {
-      return true;
-    } else {
-      console(F("Tag read failed."));
-      return false;
-    }
-  }
-  else if (triggerWriteNFC) {
-    triggerWriteNFC = false;
-    console(F("Writing NTAG"));
-    bool result = atool.writeTag(sendStatusCharArray, updateProgress);
-    if (result)
-    {
-      console(F("Tag written."));
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  triggerReadNFC = false;
-  triggerWriteNFC = false;
-}
-
-bool getAmiiboInfo(String filename) {
-  int loadResult = 0;
-  fs::File f = SPIFFS.open(filename, "r");
-
-  if (f)
-  {
-    loadResult = atool.loadFileSPIFFS(&f, true);
-    f.close();
-  }
-
-  if (loadResult >= 0)
-  {
-    sendTagInfo();
-  }
-
-  return loadResult >= 0;
-}
-
-/*
-  void deleteFile(String filename) {
-
-  Serial.println("Deleting" + filename);
-  delay(50);
-  if (SPIFFS.remove(filename))
-    Serial.println(F("Amiibo Deleted."));
-  else
-    Serial.println(F("Delete Failed"));
-  }
-*/
-
-bool saveAmiibo(String filename) {      //altered to return true if successful, heavily altered error reporting to be serial friendly
-  int bytesOut = 0;
-
-  if (filename.length() > SPIFFS_OBJ_NAME_LEN - 1) {
-    console(F("Filename too long."));                                           //Altered original code for this function to debug via serial //code 1
-    return false;
-  }
-  else {
-    if (SPIFFS.exists(filename)) {
-      //code 2
-      console(F("File exists already."));
-      return false;
-    }
-    else {
-      fs::File f = SPIFFS.open(filename, "w");
-      if (!f) {
-        //code 3
-        console(F("Failed to open file for writing."));
-        return false;
-      }
-      else {
-        if ((bytesOut = f.write(atool.original, NTAG215_SIZE)) != NTAG215_SIZE) {                                                     //etc....
-          console(F("Failed to write data."));
-          return false;
-        }
-        else {
-          if (getAmiiboInfo(filename)) {
-            console(F("Amiibo saved!"));
-            return true;
-          }
-          else {
-            console(F("Unable to decrypt amiibo."));
-            return false;
-          }
-        }
-      }
-    }
-  }
-}
 
 
 /*

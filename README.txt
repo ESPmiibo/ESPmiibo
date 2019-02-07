@@ -4,7 +4,7 @@
             /_/_____/ /______/ /_/_/   |  Y Y  \  |  || \_\ (  <_> )
                                        |__|_|__/__|__||_____/\____/   
                             
-       /Nd+`                 Written by LyfeOnEdge                ,`:hNo      
+       /Nd+`                Written by LyfeOnEdge                 ,`:hNo      
      `yMMMMMy:                                                   -sNMMMMd.     
     `dMMMMMMMMmo.          https://discord.gg/NfpNXqD         .+dMMMMMMMMN-    
    `mMMMMMMMMMMMMs                                           /NMMMMMMMMMMMN:   
@@ -19,16 +19,16 @@
 +MMMMMMNNNmmy mMMMN.                 `./ymMMMm/  MMMMyMMMMMM+:`   /dmmNNMMMMMM+
  ++/:::....`  :NMMMd-                    `hMMMN  MMMM/             ``...-::/++.
                -hMMMNy:.                 .yMMMM  MMMM/                         
-             .. `-sdMMMNmmmmm- yummmmmmmmNMMMN/  MMMM/          .-`            
+             .. `-sdMMMNmmmmm- yummmmmmmmyMMMN/  MMMM/          .-`            
         ./oymNN:   `./assssss. assssssssssss/.   asss-         .mNmho/-        
-   `:ohmNMOOOOMNo                                             :NMMMMMMNmho/.   
+   `:oBADMOOOODNo                                             :NMMMMMMNmho/.   
    .mMMMMOOMMMMOOs                                           /NMMMMMMMMMMMN:   
-    .mMMCOWMMMNy:`                                            -sNMMMMMMMMN:    
-     .hMMMMMd+`                                                 `/hMMMMMm-     
+    .THECOWHATES`                                            -sNMMMMMMMMN:    
+     .hMYOUMd+`                                                 `/hMMMMMm-     
       `MOOO.        Developed for and with help from /hgb/        `+dMy`      
-#KhatrieHatesASCII #KhatrieSawATheAsciiD #:(){ :|: & };: #ForkYou #ChownSlash
+#GBATEMPISTOXIC #SAMUSISWAIFU #StateOfTheAmiibo #DontUpgradeTo7 #GettinJiggy
 
-V1.3 Released 2/6/2019
+V1.3b Released 2/6/2019
 Special thanks to:
 discord users:
   /hbg/ 
@@ -36,8 +36,6 @@ discord users:
     Dave Devils - - - - - - - - - - - - - - - - - - Hosting Support
     Waifupls  - - - - - - - - - - - - - - - - - - - Other Support
     (╯°□°）╯︵ ┻━┻  - - - - - - - - - - - - - - - - General Table Flipping
-
-#MEGAripoff #ARR #Torrents>Reindeer #MEGAFBI #HackThePlanet
 
 If I forgot you message me and I'll credit you.
 
@@ -54,11 +52,12 @@ LyfeOnEdge's $8 Amiibo cloning tool.
   Necessary parts:
     ESP8266 (Look for NodeMCU, usually $4)
     MFRC522 NFC reader breakout (also $4)
-    Button (Will not be required in version 1.1 and later)
+    Blank NTAG215 Cards for Cloning (30 cents apiece)
 
   Recommended parts:
+    Button (No longer required! But it's still nice to have a hardware button)
     HC05 or similar Serial -> Bluetooth adapter (This will allow you to control the cloner from your phone or pc via bluetooth)
-    Blank NTAG215 Cards for Cloning 
+
 
   If you decide to alter anything, feel free, but please credit me (LyfeOnEdge) and release it under a distinct name. My only warning is to make sure you use yield() judiciously within loops, the watchdog barks easily.
 
@@ -257,6 +256,14 @@ Changlog:
   added 'more utils' menu, not much there yet
   added 'toggle debug' and 'download key' to menu
   moved the file downloader to a separate file
+
+1.3b
+  Readability tweaks, no new faetures
+  Moved File Downloader related code to its own file
+  Moved Serial and Debug related code to its own file
+  Moved Amiibo Handling related code to its own file
+  Moved Webpage Backend related code to its own file
+  Moved Webpage Frontend related code to its own file 
 
 Future Plan List:
 Add Serial console outout to a webpage (thinking @ /console)
