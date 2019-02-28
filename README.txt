@@ -6,8 +6,8 @@
                             
        /Nd+`                Written by LyfeOnEdge                 ,`:hNo      
      `yMMMMMy:                                                   -sNMMMMd.     
-    `dMMMMMMMMmo.          https://discord.gg/NfpNXqD         .+dMMMMMMMMN-    
-   `mMMMMMMMMMMMMs                                           /NMMMMMMMMMMMN:   
+    `dMMMMMMMMmo.          https://discord.gg/NfpNXqD         .+dNOTXTHISN-    
+   `mMMMMMMMMMMMMs                                           /NSHITXAGAINMN:   
    .+sdNNMMMMMMMs                                             /NMMMMMMMNmy+-   
        `-+sdNNM+      `````.`      ```````````       .----.   -NMNmyo:.       
             `::   .:shdmNNNNN-  `+hmNNNNNNNNNN-    /hmMMMMMMmh/            
@@ -20,22 +20,24 @@
  ++/:::....`  :NMMMd-                    `hMMMN  MMMM/             ``...-::/++.
                -hMMMNy:.                 .yMMMM  MMMM/                         
              .. `-sdMMMNmmmmm- yummmmmmmmyMMMN/  MMMM/          .-`            
-        ./oymNN:   `./assssss. assssssssssss/.   asss-         .mNmho/-        
+        ./oymNN:   `./assssss. assssssssssssS/   asss-         .mNmho/-        
    `:oBADMOOOODNo                                             :NMMMMMMNmho/.   
    .mMMMMOOMMMMOOs                                           /NMMMMMMMMMMMN:   
     .THECOWHATES`                                            -sNMMMMMMMMN:    
      .hMYOUMd+`                                                 `/hMMMMMm-     
       `MOOO.        Developed for and with help from /hgb/        `+dMy`      
-#GBATEMPISTOXIC #SAMUSISWAIFU #StateOfTheAmiibo #DontUpgradeTo7 #GettinJiggy
+#ROCKPUNS #TAKEITFORGRANITE #AHardPlaceBetweenTwoRocks #QueenOfTheHobos #RatQueen #ArentYouJustARemasterOfYourMom? #freetv #camera>phone #bigboss
+#babyboss #hangman #byegeneral 
 
-V1.3b Released 2/6/2019
+V1.9 Released 2/28/2019
 Special thanks to:
 discord users:
   /hbg/ 
     not-cdn - - - - - - - - - - - - - - - - - - - - HTML Support
-    Dave Devils - - - - - - - - - - - - - - - - - - Hosting Support
-    Waifupls  - - - - - - - - - - - - - - - - - - - Other Support
+    Dave Devils - - - - - - - - - - - - - - - - - - Hosting + C++ + More
+    Waifupls  - - - - - - - - - - - - - - - - - - - Hot Secretary
     (╯°□°）╯︵ ┻━┻  - - - - - - - - - - - - - - - - General Table Flipping
+    Bunie - - - - - - - - - - - - - - - - - - - - - Resident Discord Mom
 
 If I forgot you message me and I'll credit you.
 
@@ -59,7 +61,7 @@ LyfeOnEdge's $8 Amiibo cloning tool.
     HC05 or similar Serial -> Bluetooth adapter (This will allow you to control the cloner from your phone or pc via bluetooth)
 
 
-  If you decide to alter anything, feel free, but please credit me (LyfeOnEdge) and release it under a distinct name. My only warning is to make sure you use yield() judiciously within loops, the watchdog barks easily.
+  If you decide to alter anything, feel free, but please release it under a distinct name. My only warning is to make sure you use yield() judiciously within loops, the watchdog barks easily.
 
 Features: 
     
@@ -73,7 +75,7 @@ Features:
         Currently allows only exact duplicates to be made (eg. no on-the fly adjustment encrypted data and Stats), in the future I plan on adding stat adjustment abilities like more hearts for the midna link Amiibo.
 
     File management:
-        Basic file management. With the Amiibo dumps being 540 bytes in length and the ESP8266 having 4mb of space you could fit roughly 7000 amiibos on it. That being said it's sometimes nice to delete a few... 
+        Basic file management. With the Amiibo dumps being 540 bytes in length and the ESP8266 having 4mb of space you could fit roughly 6000 amiibos on it. That being said it's sometimes nice to delete a few... 
 
     Dumping:
         Dump the text contents of physical figures or saved amiibos for use elsewhere.
@@ -92,7 +94,8 @@ Features:
 
 Warnings:
     
-    Sometimes it can damage NTags during the initial write. This is only a problem when programming blank cards, your Amiibos will not be harmed. You can however lose cards if you aren't careful when flashing them. I recommend having them sit on the reader rather than holding them.
+    Sometimes it can damage NTags during the initial write. This is only a problem when programming fresh blank cards, your Amiibos will not be harmed. You can however lose cards if you aren't careful when flashing them. I recommend having them sit on the reader rather than holding them.
+
 
 Known Issues:
     local.ip/edit won't load right when connected directly to the esp8266 as an acces point. Hope to fix in future
@@ -112,23 +115,71 @@ FAQs:
     How do I upload amiibos to the ESPmiibo?
         After connecting the ESPmiibo to your wifi network visit 192.168.4.1/edit on your smartphone or pc to upload decryption keys and amiibo dumps in the for of .bins
 
-
 Instructions:
 
 Wiring is pretty easy
 
-MFRC-522 Pin    ESP Pin
-SDA - - - - - - D2
-SCK - - - - - - D5
-MOSI- - - - - - D7
-MISO- - - - - - D6
-GND - - - - - - GND
-RST - - - - - - D3
-3.3v- - - - - - 3.3v
+MFRC-522 Pin    ESP Pin        Diagram
+SDA - - - - - - D2 - - - - - - {A}
+SCK - - - - - - D5 - - - - - - {B}
+MOSI- - - - - - D7 - - - - - - {C}
+MISO- - - - - - D6 - - - - - - {D}
+GND - - - - - - GND- - - - - - {E}
+RST - - - - - - D3 - - - - - - {F}
+3.3v- - - - - - 3.3v - - - - - {G}
+
+
+           _________________________________
+          / __     ╔═╗ ╔═╗ ╔═╗ ╔══════   __ \                
+          |//\\    ║ ║ ║ ║ ║ ║ ║        //\\|
+          |\\//    ║ ╚═╝ ╚═╝ ╚═╝        \\//|
+          |()A0    ╠════════════        D0()| 
+          |()RSV  ©█▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█©   D1()|
+          |()RSV  ©█               █©   D2()|  - {A}         
+          |()SD3  ©█               █©   D3()|  - {F}
+          |()SD2  ©█               █©   D4()|
+          |()SD1  ©█  NodeMCU1.0   █©  3V3()|  - {G}
+          |()CMD  ©█  ESP8266MOD   █©  GND()|  - {E}
+          |()SD0  ©█▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█©   D5()|  - {B}
+          |()CLK     °■°═°▓°▓ ° ° °     D6()|  - {D}
+          |()GND   ▓▓ █ ═╣▓▓▓▒▒         D7()|  - {C}
+          |()3V3        ═╝▓▓▓   ▄▄      D8()|
+          |()EN  █ █ █ █ █ █ █ █ █ █ █  RX()|
+          |()RST                        TX()|
+          |()GND █         █▀▀▀▀▀▀█  ■ GND()|
+          |()Vin   ║ ║     █      █    3V3()|
+          |  __            █▄▄▄▄▄▄█     __  |
+          | //\\  __RST__________FLS__ //\\ |
+          \ \\// |/\| |          | |/\|\\// /
+           \_____|\/|_|          |_|\/|____/
+                      |__________|
+
+
+
+╔═════════════════════════════════════════════════════════╗
+║  ____________________________________  (O) █ █ █ ║║     ║
+║ /  ________________________________  \                  ║
+║ | /  ____________________________  \  |                 ║
+║ | | /  _________________________ \  | |   █ █ █ █       ║
+║ | | | / (O)                     \ | | |            3V3()║  - {G}  
+║ | | | |                       __/ | | |            RST()║  - {F}
+║ | | | |      /       \      /     | | |    █▀▀▀▀▀█ GND()║  - {E}
+║ \ \ \ °     / /     \ \    ▀      | | |    █     █ IRQ()║
+║ ° \ \ \    ( ( ( . ) ) )   ▀      | | |    █▄▄▄▄▄█MISO()║  - {D}
+║ | | | |     \ \     / /    ▀      | | |           MOSI()║  - {C}
+║ | | | |      \       /     \ __   | | |            SCK()║  - {B}
+║ | | | | (O)   MFRC522           \ | | |   █ █ █ █  SDA()║  - {A}
+║ | | | \_________________________/ | | |                 ║
+║ | | \_____________________________/ | |         ▄▄ ▄▄   ║
+║ | \________________________________/  |       ______    ║
+║ \____________________________________/ (O)  (_______)   ║
+╚═════════════════════════════════════════════════════════╝
+
+
 
 
 This button is no longer required as of V1.1
-However I will continue to support a physical button as buttons are the best.
+However I will continue to support a physical button cause buttons are the best.
 Button- - - - - D8
 
 
@@ -190,8 +241,39 @@ File Rename                 (Command Line)          (Good, web browser)
 Initiate Amiibo Flash       (Command Line)          (Yes, more work needed)
 Dump Amiibo byte text       (Command Line)          (soon)
 Download File from ESP      (Not Possible)          (Good, Web browser)
-Cloning                     (Command Line W/ Button)(Next Release)
+Cloning                     (Command Line W/ Button)(When I get to it.)
 Bulk Ammibo production      (After Wifi features)   (Eventually)
+
+
+
+Known Bugs:
+              dhdN    Ndhd              
+              NhyyddddyyhN              
+              dyyyyyyyyyyd              
+             hyyyyyyyyyyyyh             
+    ddN      yyyyyyyyyyyyyy      Ndd    
+    dyydNNNN!PLEASE!!SQUISH!NNNNdyyd    
+     NdhhhyyyyyyyyyNNyyyyyyyyyhhhdN     
+        NhyyyyyyyyyNNyyyyyyyyyd         
+       NhyyyyyyyyyyNNyyyyyyyyyyh        
+       hyyyyyyyyyyyNNyyyyyyyyyyyd       
+  hhhhhyyyyyyyyyyyyNNyyyyyyyyyyyyhhhhh  
+       yyyyyyyyyyyyNNyyyyyyyyyyyy       
+       yyyyyyyyyyyyNNyyyyyyyyyyyy       
+        yyyyyyyyyyyNNyyyyyyyyyyy        
+     NdhyyyyyyyyyyyNNyyyyyyyyyyyhdN     
+    dyyd  hyyyyyyyyNNyyyyyyyyh  dyyd    
+    hdN     hyyyyyyNNyyyyyhdN    Ndh    
+              N dhhNNhhd N              
+    -(very dangerous doom bug of doom)
+
+    ~Key downloading works 1/5th of the time due to slow server.
+    Working to find a better way to access the key.
+
+    ~Some areas of the console are missing certain commands like back etc
+     This is a result of the way this program came into being, it is slowly being improved upon and I'm going back to add functionality. Slowly making everything more flexible (menuing etc) I plan on adding the ability to navigate a series of pages with the get method for simple flashing
+
+
 
 
 Changelog:  
@@ -265,6 +347,16 @@ Changlog:
   Moved Webpage Backend related code to its own file
   Moved Webpage Frontend related code to its own file 
 
+1.3-1.8 
+  milestones. Reverted separate filing.
+
+1.9
+  Complete overhaul of a lot of systems
+  added commands, help system, bulk processing
+  wiped menuing system since command system is better
+  KNOWN ISSUES: Wifi is painfully slow for a few things. (notably the webpage flash button, will be fixed in a later version using javascript so the pacge doesn't have to reload)
+  
+
 Future Plan List:
 Add Serial console outout to a webpage (thinking @ /console)
 Add batch production (folder/single bulk)
@@ -286,4 +378,9 @@ bfv ght fhyyve ar mtxk jpt ptbax ab thaxr kmp | hglzvjqfadcxytmowerbpsnuki
 
 Secret 3:
 32 20 2B 20 32 20 69 73 20 34 20 6D 69 6E 75 73 20 31 20 64 61 74 73 20 33 20 71 75 69 63 6B 20 6D 61 66 73
+
+Secret 4: 
+aHR0cHM6Ly9jZG4taW1hZ2VzLTEubWVkaXVtLmNvbS9tYXgvODAwLzEqUkJ3cGhRNEpZVm5ab2FwX2wwTFVMZy5wbmc=
+
+
 
